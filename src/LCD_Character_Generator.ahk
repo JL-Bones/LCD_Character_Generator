@@ -25,7 +25,9 @@ lcdGen() {
 
     g_Char := gui1.Classy_Add("GroupBox", "Center c000000", "Character",,, 0, 0, 2/5, g_hexString)
 
-    g_var := gui1.Classy_Add("GroupBox", "Center c000000", "Var",,, g_Char, 0, 1, "f")
+    g_clip := gui1.Classy_Add("GroupBox", "Center c000000", "Clipboard",,, g_Char, 0, 1/5, "f")
+
+    g_var := gui1.Classy_Add("GroupBox", "Center c000000", "Var",,, g_clip,, 1, "f")
 
     g_binStream := gui1.Classy_Add("GroupBox", "Center c000000", "Bin Stream",,, g_Char, g_var, 1/3, 1/3)
     g_hexStream := gui1.Classy_Add("GroupBox", "Center c000000", "Hex Stream",,, g_binStream, g_var, 1/3, 1/3)
@@ -34,6 +36,9 @@ lcdGen() {
     g_varHex := gui1.Classy_Add("GroupBox", "Center c000000", "Var Hex",,, g_varBin, g_binStream, 1/3, g_hexString)
 
     g_var_e1 := gui1.Classy_Add("Edit", "", "customChar",, g_var, 0, 0, 1, 1) 
+
+    g_clip_b1 := gui1.Classy_Add("Button", "Center", "Paste",, g_clip, 0, "f", 1/2, 1)
+    g_clip_b2 := gui1.Classy_Add("Button", "Center", "Swap",, g_clip, 1/2, "f", 1/2, 1)
 
     g_binStream_b1 := gui1.Classy_Add("Button", "Center", "Copy",, g_binStream, 0, "f", 1, 1)
     g_binStream_e1 := gui1.Classy_Add("Edit", "Center ReadOnly Multi -VScroll -Wrap Multi -VScroll -Wrap",,, g_binStream, 0, 0, 1, g_binStream_b1)
@@ -92,12 +97,12 @@ lcdGen() {
 
     events()
     events() {
-        g_binStream_b1.onEvent("Click", (*) => A_Clipboard := g_binStream_e1.Text)
-        g_hexStream_b1.onEvent("Click", (*) => A_Clipboard := g_hexStream_e1.Text)
-        g_hexString_b1.onEvent("Click", (*) => A_Clipboard := g_hexString_e1.Text)
-        g_varString_b1.onEvent("Click", (*) => A_Clipboard := g_varString_e1.Text)
-        g_varBin_b1.onEvent("Click", (*) => A_Clipboard := g_varBin_e1.Text)
-        g_varHex_b1.onEvent("Click", (*) => A_Clipboard := g_varHex_e1.Text)
+        g_binStream_b1.onEvent("Click", (*) => copyToClipboard(g_binStream_e1.Text))
+        g_hexStream_b1.onEvent("Click", (*) => copyToClipboard(g_hexStream_e1.Text))
+        g_hexString_b1.onEvent("Click", (*) => copyToClipboard(g_hexString_e1.Text))
+        g_varString_b1.onEvent("Click", (*) => copyToClipboard(g_varString_e1.Text))
+        g_varBin_b1.onEvent("Click", (*) => copyToClipboard(g_varBin_e1.Text))
+        g_varHex_b1.onEvent("Click", (*) => copyToClipboard(g_varHex_e1.Text))
 
         g_var_e1.onEvent("Change", (*) => getValues())
 
@@ -127,6 +132,89 @@ lcdGen() {
             }
             getValues()
         }
+
+        g_clip_b1.onEvent("Click", paste)
+        paste(*) {
+
+            clipVar := ""
+            clipValues := []
+
+            ClipboardtoInt(A_Clipboard, &clipVar, clipValues)
+
+            rowCount := 0
+            colCount := 0
+            clear()
+
+            if (clipVar) {
+                g_var_e1.Value := clipVar
+            }
+            
+            for index, value in clipValues {
+                binStr := intToBin(value)
+                loop StrLen(binStr) {
+                    bit := SubStr(binStr, A_Index, 1)
+                    pControl := g_Char_p[(index - 1) * (columnCount - 1) + A_Index]
+                    if (bit == "1") {
+                        pControl.Opt(darkColor)
+                        pControl.state := true
+                    } else {
+                        pControl.Opt(lightColor)
+                        pControl.state := false
+                    }
+                    pControl.Redraw()
+                }
+            }
+
+            getValues()
+        }
+
+        g_clip_b2.onEvent("Click", swap)
+        swap(*) {
+
+            clipString := g_varString_e1.Value
+            paste()
+
+            A_Clipboard := clipString
+        }
+    }
+
+    copyToClipboard(text) {
+        A_Clipboard := text
+        ToolTip("Copied to Clipboard:`n______`n" text)
+        SetTimer(ToolTip, -1000)
+    }
+
+    ClipboardtoInt(clipString, &nameVar := "", valueArray := []) {
+        clipString := StrReplace(clipString, "`r")
+        clipString := StrReplace(clipString, "`t")
+        clipString := StrReplace(clipString, "byte ")
+        clipString := StrReplace(clipString, "0x")
+        clipString := StrReplace(clipString, ",")
+        clipString := StrReplace(clipString, "};")
+        clipString := StrReplace(clipString, "`n", " ")
+
+        clipString := LTrim(clipString)
+
+        if (inStr(clipString, "[")) {
+            nameVar := SubStr(clipString, 1, inStr(clipString, "[") - 1)
+            clipString := SubStr(clipString, inStr(clipString, "{") + 1)
+        }
+
+        clipString := StrReplace(clipString, "B")
+
+        for myNumber in StrSplit(clipString, " ") {
+            if (myNumber != "") {
+                myNumber := Trim(myNumber)
+                if (RegExMatch(myNumber, "^[0-9A-Fa-f]{2}$")) {
+                    myNumber := HexToInt(myNumber)
+                } else if (RegExMatch(myNumber, "^[01]{5}$")) {
+                    myNumber := BinToInt(myNumber)
+                } else if (RegExMatch(myNumber, "^[01]{8}$")) {
+                    myNumber := BinToInt(myNumber)
+                }
+                valueArray.Push(Integer(myNumber))
+            }
+        }
     }
 
     getValues()
@@ -154,7 +242,13 @@ lcdGen() {
             data.Push(binToInt(number))
         }
 
-        varName := g_var_e1.Value "[]"
+        if (g_var_e1.Value) {
+            varName := g_var_e1.Value "[]"
+        } else {
+            g_var_e1.Value := "customChar"
+            varName := g_var_e1.Value "[]"
+            g_var_e1.Focus()
+        }
 
         g_binStream_Format()
         g_binStream_Format() {
@@ -229,8 +323,8 @@ lcdGen() {
     intToBin(intValue) {
         binStr := ""
         while (intValue > 0) {
-        binStr := Mod(intValue, 2) binStr
-        intValue := Floor(intValue / 2)
+            binStr := Mod(intValue, 2) binStr
+            intValue := Floor(intValue / 2)
         }
         return StrLen(binStr) < 8 ? SubStr("00000", 1, 5 - StrLen(binStr)) binStr : binStr
     }
@@ -240,6 +334,17 @@ lcdGen() {
         return hexStr
     }
 
+    hexToInt(hexStr) {
+        intValue := 0
+        hexStr := StrUpper(hexStr)
+        hexDigits := "0123456789ABCDEF"
+        loop StrLen(hexStr) {
+            digit := SubStr(hexStr, A_Index, 1)
+            intValue := intValue * 16 + InStr(hexDigits, digit) - 1
+        }
+        return intValue
+    }
+
     gui1.Classy_Show()
 
     SetTimer(active_loop, 1)
@@ -247,10 +352,49 @@ lcdGen() {
     clickState := false
     drawState := 0
     oldObj := ""
+    oldControl := ""
+
+    oldClip := ""
+    errorState := false
 
     active_loop() {
 
         if (WinActive("ahk_id " gui1.hwnd)) {
+
+            if (oldClip != A_Clipboard) {
+                oldClip := A_Clipboard
+                
+                try {
+                    ClipboardtoInt(A_Clipboard) 
+                } catch {
+                    g_clip_b1.Opt("Disabled")
+                    g_clip_b2.Opt("Disabled")
+                    errorState := true
+                } else {
+                    g_clip_b1.Opt("-Disabled")
+                    g_clip_b2.Opt("-Disabled")
+                    errorState := false
+                }
+                 
+            }
+
+            MouseGetPos(&X, &Y, &Win, &Control)
+
+            ; if (oldControl != Control) {
+                if (Control == g_clip_b1.ClassNN || Control == g_clip_b2.ClassNN) {
+                    if (StrLen(A_Clipboard) < 200) {
+                        if (errorState) {
+                            ToolTip("Invalid Clipboard")
+                            SetTimer(ToolTip, -10)
+                        } else {
+                            ToolTip("Clipboard:`n______`n" A_Clipboard)
+                            SetTimer(ToolTip, -10)
+                        }
+                        
+                    }
+                }
+                oldControl := Control
+            ; }
 
             if (GetKeyState("LButton", "P") && !clickState) {
                 
@@ -278,11 +422,11 @@ lcdGen() {
                 drawState := 0
 
                 oldObj := 0
+                oldControl := 0
+                oldClip := 0
             }
 
             if (drawState) {
-
-                MouseGetPos(&X, &Y, &Win, &Control)
 
                 for pControl in g_Char_p {
 
@@ -305,6 +449,8 @@ lcdGen() {
                     }
                 }
             }
+        } else {
+            ToolTip()
         }
     }    
 
