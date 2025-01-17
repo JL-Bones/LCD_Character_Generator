@@ -1,6 +1,12 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 #Include lib\Classy_GUI.ahk
+#NoTrayIcon
+
+if (!A_IsCompiled) {
+    TraySetIcon("lib\icon.ico")
+}
+
 
 lcdGen()
 
