@@ -10,10 +10,10 @@ This is a simple tool to generate LCD characters.
 4. **Swap Data**: Paste from the clipboard and copy what is currently on the draw space into the clipboard.
 5. **Change Font**: Change the font size by holding CTRL and pressing '+' or '-'.
 
-## Download and Run
+## Download
 
-- Download [LCD_Character_Generator.exe](./LCD_Character_Generator.exe) and run it.
-- Source code is located in the [src](./src) directory. (You need AutoHotkey installed to run it)
+- Download [LCD_Character_Generator_x64.exe](/LCD_Character_Generator_x64.exe) for 64 bit Windows.
+- Download [LCD_Character_Generator_x86.exe](/LCD_Character_Generator_x86.exe) for 32 bit Windows.
 
 ### Windows Warning
 

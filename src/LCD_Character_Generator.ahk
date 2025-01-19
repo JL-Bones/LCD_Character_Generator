@@ -47,7 +47,7 @@ lcdGen() {
     g_clip_b2 := gui1.Classy_Add("Button", "Center", "Swap",, g_clip, 1/2, "f", 1/2, 1)
 
     g_binStream_b1 := gui1.Classy_Add("Button", "Center", "Copy",, g_binStream, 0, "f", 1, 1)
-    g_binStream_e1 := gui1.Classy_Add("Edit", "Center ReadOnly Multi -VScroll -Wrap Multi -VScroll -Wrap",,, g_binStream, 0, 0, 1, g_binStream_b1)
+    g_binStream_e1 := gui1.Classy_Add("Edit", "Center ReadOnly Multi -VScroll -Wrap",,, g_binStream, 0, 0, 1, g_binStream_b1)
 
     g_hexStream_b1 := gui1.Classy_Add("Button", "Center", "Copy",, g_hexStream, 0, "f", 1, 1)
     g_hexStream_e1 := gui1.Classy_Add("Edit", "Center ReadOnly Multi -VScroll -Wrap",,, g_hexStream, 0, 0, 1, g_hexStream_b1)
@@ -186,8 +186,8 @@ lcdGen() {
 
     copyToClipboard(text) {
         A_Clipboard := text
-        ToolTip("Copied to Clipboard:`n______`n" text)
-        SetTimer(ToolTip, -1000)
+        ToolTip("Copied to Clipboard:`n______`n" text,,, 2)
+        SetTimer((*) => ToolTip(,,,2), -1000)
     }
 
     ClipboardtoInt(clipString, &nameVar := "", valueArray := []) {
@@ -195,6 +195,7 @@ lcdGen() {
         clipString := StrReplace(clipString, "`t")
         clipString := StrReplace(clipString, "byte ")
         clipString := StrReplace(clipString, "0x")
+        clipString := StrReplace(clipString, "0b")
         clipString := StrReplace(clipString, ",")
         clipString := StrReplace(clipString, "};")
         clipString := StrReplace(clipString, "`n", " ")
@@ -386,21 +387,23 @@ lcdGen() {
 
             MouseGetPos(&X, &Y, &Win, &Control)
 
-            ; if (oldControl != Control) {
+            if (oldControl != Control) {
                 if (Control == g_clip_b1.ClassNN || Control == g_clip_b2.ClassNN) {
                     if (StrLen(A_Clipboard) < 200) {
                         if (errorState) {
                             ToolTip("Invalid Clipboard")
-                            SetTimer(ToolTip, -10)
+                            ; SetTimer(ToolTip, -10)
                         } else {
                             ToolTip("Clipboard:`n______`n" A_Clipboard)
-                            SetTimer(ToolTip, -10)
+                            ; SetTimer(ToolTip, -10)
                         }
                         
                     }
+                } else {
+                    ToolTip()
                 }
                 oldControl := Control
-            ; }
+            } 
 
             if (GetKeyState("LButton", "P") && !clickState) {
                 
