@@ -12,8 +12,8 @@ This is a simple tool to generate LCD characters.
 
 ## Download
 
-- Download [LCD_Character_Generator_x64.exe](/LCD_Character_Generator_x64.exe) for 64 bit Windows.
-- Download [LCD_Character_Generator_x86.exe](/LCD_Character_Generator_x86.exe) for 32 bit Windows.
+- Download [LCD_Character_Generator_x64.exe](https://github.com/JL-Bones/LCD_Character_Generator/releases/download/v1.0/LCD_Character_Generator_x64.exe) for 64 bit Windows.
+- Download [LCD_Character_Generator_x86.exe](https://github.com/JL-Bones/LCD_Character_Generator/releases/download/v1.0/LCD_Character_Generator_x86.exe) for 32 bit Windows.
 
 ### Windows Warning
 
